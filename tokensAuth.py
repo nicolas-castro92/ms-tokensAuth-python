@@ -13,19 +13,22 @@ def hello():
 
 @app.route("/crear-token")
 def crear():
-    id = request.args.get("id")
+    nombre = request.args.get("nombre")
     #print(os.environ.get("JWT_SECRET_KEY"))
-    if id!=None:
+    if nombre!=None:
         id_usuario = request.args.get("id_usuario")
         id_rol = request.args.get("id_rol")
-        print(id, id_usuario, id_rol)
+        print(nombre, id_usuario, id_rol)
+        print(type(nombre))
         try:
             secret_key = os.environ.get("JWT_SECRET_KEY")
-            token = jwt.encode({'id': id, 'id_usuario': id_usuario, 'rol': id_rol}, secret_key, algorithm='HS256')
-            return token
+            tk = jwt.encode({'nombre': nombre, 'id_usuario': id_usuario, 'rol': id_rol}, secret_key, algorithm='HS256')
+            print(type(tk))
+            print(tk)
+            return tk
         except Exception as e:
             print(e.message)
-            return ""
+            return "error"
     else:
         return "campos invalidos"
 
@@ -34,12 +37,27 @@ def crear():
 @app.route("/validar-token")
 def validar():
     token = request.args.get("token")
+    rol = request.args.get("rol")
     try:
         secret_key = os.environ.get("JWT_SECRET_KEY")
-        jwt.decode(token, secret_key, algorithms=['HS256'])
-        return "OK"
+        token = jwt.decode(token, secret_key, algorithms=['HS256'])
+        if token["rol"] == rol:
+            return "OK"
+        else:
+            return "KO"
     except Exception as e:
-        return "KO"
+        return "excepcion"
+
+
+@app.route("/validar-session")
+def validarSession():
+    token = request.args.get("token")
+    try:
+        secret_key = os.environ.get("JWT_SECRET_KEY")
+        token = jwt.decode(token, secret_key, algorithms=['HS256'])
+        return token
+    except Exception as e:
+        return e
 
 
 if __name__ == '__main__':
